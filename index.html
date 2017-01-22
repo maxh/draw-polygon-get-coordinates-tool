@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Draw Polygon, Get Coordinates</title>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <style>
+      body {
+        display: flex;
+        height: 100vh;
+        flex-direction: column;
+      }
+      main {
+        display: flex;
+        flex-grow: 1;
+      }
+      .map {
+        flex-grow: 1;
+      }
+      .controls {
+        width: 400px;
+      }
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+    <script>
+      function init() {
+        var outputDiv = document.querySelector('.points');
+        var polygons = [];
+
+        var map = new google.maps.Map(document.querySelector('.map'), {
+          center: {lat: 37.7805, lng: -122.4125},
+          zoom: 17
+        });
+
+        var drawingManager = new google.maps.drawing.DrawingManager({
+          drawingMode: google.maps.drawing.OverlayType.POLYGON,
+          drawingControl: true,
+          drawingControlOptions: {
+            position: google.maps.ControlPosition.TOP_CENTER,
+            drawingModes: ['polygon']
+          }
+        });
+
+        google.maps.event.addListener(drawingManager, 'polygoncomplete', function(polygon) {
+          polygons.push(polygon);
+          var path = polygon.getPath();
+          var complexPoints = path.getArray();
+          var points = complexPoints.map(function(complexPoint) {
+            return complexPoint.toJSON();
+          });
+          outputDiv.textContent += JSON.stringify(points);
+        });
+
+        function clear() {
+          outputDiv.textContent = '';
+          polygons.forEach(function(polygon) {
+            polygon.setMap(null);
+          })
+          polygons = [];
+        }
+
+        google.maps.event.addListener(map, 'click', function() {
+          if (polygons.length) clear();
+        });
+        var clearButton = document.querySelector('.clear').addEventListener('click', clear);
+
+        drawingManager.setMap(map);
+      }
+    </script>
+    <!-- AIzaSyBw3jRZpxAJk_21HV_6xvlx-f_vkt1m87M -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=&libraries=drawing&callback=init"
+         async defer></script>
+  </head>
+  <body>
+    <header>
+      1. Draw polygon, 2. Get Coordinates
+    </header>
+    <main>
+      <div class="map"></div>
+      <div class="controls">
+        <button class="clear">Clear</button>
+        <div class="points"></div>
+      </div>
+    </main>
+  </body>
+</html>
